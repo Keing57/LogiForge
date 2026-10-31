@@ -17,7 +17,7 @@
             <Button Content="Output LED" Margin="0,5"/>
         </StackPanel>
 
-        <Canvas Grid.Column="1" Background="White" ClipToBounds="True">
+        <Canvas x:Name="LogicCanvas" Grid.Column="1" Background="White" ClipToBounds="True">
         </Canvas>
     </Grid>
 </Window>
