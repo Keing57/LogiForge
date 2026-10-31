@@ -1,7 +1,23 @@
 <Window x:Class="LogicSim.MainWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        Title="LogicSim" Height="450" Width="800">
+        Title="LogicSim" Height="600" Width="900">
     <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="200"/>
+            <ColumnDefinition Width="*"/>
+        </Grid.ColumnDefinitions>
+
+        <StackPanel Grid.Column="0" Background="LightGray">
+            <TextBlock Text="Toolbox" FontWeight="Bold" Margin="0,0,0,10"/>
+            <Button Content="AND Gate" Margin="0,5"/>
+            <Button Content="OR Gate" Margin="0,5"/>
+            <Button Content="NOT Gate" Margin="0,5"/>
+            <Button Content="Input Switch" Margin="0,5"/>
+            <Button Content="Output LED" Margin="0,5"/>
+        </StackPanel>
+
+        <Canvas Grid.Column="1" Background="White" ClipToBounds="True">
+        </Canvas>
     </Grid>
 </Window>
