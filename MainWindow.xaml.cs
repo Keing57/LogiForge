@@ -1,5 +1,6 @@
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Shapes;
 using LogicSim.Engine;
@@ -10,6 +11,9 @@ namespace LogicSim
     public partial class MainWindow : Window
     {
         private SimulationEngine engine;
+        private bool isDragging = false;
+        private Point clickPosition;
+        private UIElement draggedElement;
 
         public MainWindow()
         {
@@ -28,30 +32,66 @@ namespace LogicSim
 
             foreach (var component in engine.Components)
             {
-                var rect = new Rectangle
+                var container = new Grid
                 {
                     Width = 60,
                     Height = 40,
+                    Background = Brushes.Transparent
+                };
+
+                var rect = new Rectangle
+                {
                     Fill = Brushes.LightBlue,
                     Stroke = Brushes.Black,
                     StrokeThickness = 2
                 };
 
-                Canvas.SetLeft(rect, 100);
-                Canvas.SetTop(rect, 100);
-                LogicCanvas.Children.Add(rect);
-
                 var text = new TextBlock
                 {
                     Text = component.GetType().Name.Replace("Gate", ""),
-                    FontWeight = FontWeights.Bold
+                    FontWeight = FontWeights.Bold,
+                    HorizontalAlignment = HorizontalAlignment.Center,
+                    VerticalAlignment = VerticalAlignment.Center
                 };
 
-                text.Measure(new Size(double.PositiveInfinity, double.PositiveInfinity));
-                
-                Canvas.SetLeft(text, 100 + (60 - text.DesiredSize.Width) / 2);
-                Canvas.SetTop(text, 100 + (40 - text.DesiredSize.Height) / 2);
-                LogicCanvas.Children.Add(text);
+                container.Children.Add(rect);
+                container.Children.Add(text);
+
+                container.MouseLeftButtonDown += Container_MouseLeftButtonDown;
+                container.MouseMove += Container_MouseMove;
+                container.MouseLeftButtonUp += Container_MouseLeftButtonUp;
+
+                Canvas.SetLeft(container, 100);
+                Canvas.SetTop(container, 100);
+                LogicCanvas.Children.Add(container);
+            }
+        }
+
+        private void Container_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+        {
+            isDragging = true;
+            draggedElement = (UIElement)sender;
+            clickPosition = e.GetPosition(draggedElement);
+            draggedElement.CaptureMouse();
+        }
+
+        private void Container_MouseMove(object sender, MouseEventArgs e)
+        {
+            if (isDragging && draggedElement != null)
+            {
+                Point currentPosition = e.GetPosition(LogicCanvas);
+                Canvas.SetLeft(draggedElement, currentPosition.X - clickPosition.X);
+                Canvas.SetTop(draggedElement, currentPosition.Y - clickPosition.Y);
+            }
+        }
+
+        private void Container_MouseLeftButtonUp(object sender, MouseButtonEventArgs e)
+        {
+            if (isDragging && draggedElement != null)
+            {
+                isDragging = false;
+                draggedElement.ReleaseMouseCapture();
+                draggedElement = null;
             }
         }
     }
