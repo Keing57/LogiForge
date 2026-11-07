@@ -10,11 +10,11 @@
 
         <StackPanel Grid.Column="0" Background="LightGray">
             <TextBlock Text="Toolbox" FontWeight="Bold" Margin="0,0,0,10"/>
-            <Button Content="AND Gate" Margin="0,5"/>
-            <Button Content="OR Gate" Margin="0,5"/>
-            <Button Content="NOT Gate" Margin="0,5"/>
-            <Button Content="Input Switch" Margin="0,5"/>
-            <Button Content="Output LED" Margin="0,5"/>
+            <Button Content="AND Gate" Margin="0,5" Click="BtnAnd_Click"/>
+            <Button Content="OR Gate" Margin="0,5" Click="BtnOr_Click"/>
+            <Button Content="NOT Gate" Margin="0,5" Click="BtnNot_Click"/>
+            <Button Content="Input Switch" Margin="0,5" Click="BtnSwitch_Click"/>
+            <Button Content="Output LED" Margin="0,5" Click="BtnLed_Click"/>
         </StackPanel>
 
         <Canvas x:Name="LogicCanvas" Grid.Column="1" Background="White" ClipToBounds="True">
