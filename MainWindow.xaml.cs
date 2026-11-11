@@ -14,11 +14,17 @@ namespace LogicSim
         private bool isDragging = false;
         private Point clickPosition;
         private UIElement draggedElement;
+        
+        private bool isDrawingWire = false;
+        private Line currentWireLine;
+        private Ellipse currentStartPinNode;
 
         public MainWindow()
         {
             InitializeComponent();
             engine = new SimulationEngine();
+            LogicCanvas.MouseMove += LogicCanvas_MouseMove;
+            LogicCanvas.MouseLeftButtonUp += LogicCanvas_MouseLeftButtonUp;
         }
 
         private void BtnAnd_Click(object sender, RoutedEventArgs e)
@@ -124,6 +130,7 @@ namespace LogicSim
                 double yPos = (40.0 / (component.Outputs.Count + 1)) * (i + 1) - 5;
                 Canvas.SetLeft(pinNode, 65);
                 Canvas.SetTop(pinNode, yPos);
+                pinNode.MouseLeftButtonDown += PinNode_MouseLeftButtonDown;
                 container.Children.Add(pinNode);
             }
 
@@ -134,6 +141,50 @@ namespace LogicSim
             Canvas.SetLeft(container, 300);
             Canvas.SetTop(container, 250);
             LogicCanvas.Children.Add(container);
+        }
+
+        private void PinNode_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+        {
+            e.Handled = true;
+            isDrawingWire = true;
+            currentStartPinNode = (Ellipse)sender;
+
+            Point center = currentStartPinNode.TranslatePoint(new Point(currentStartPinNode.Width / 2, currentStartPinNode.Height / 2), LogicCanvas);
+
+            currentWireLine = new Line
+            {
+                Stroke = Brushes.Black,
+                StrokeThickness = 2,
+                X1 = center.X,
+                Y1 = center.Y,
+                X2 = center.X,
+                Y2 = center.Y
+            };
+
+            LogicCanvas.Children.Add(currentWireLine);
+            LogicCanvas.CaptureMouse();
+        }
+
+        private void LogicCanvas_MouseMove(object sender, MouseEventArgs e)
+        {
+            if (isDrawingWire && currentWireLine != null)
+            {
+                Point currentPos = e.GetPosition(LogicCanvas);
+                currentWireLine.X2 = currentPos.X;
+                currentWireLine.Y2 = currentPos.Y;
+            }
+        }
+
+        private void LogicCanvas_MouseLeftButtonUp(object sender, MouseButtonEventArgs e)
+        {
+            if (isDrawingWire)
+            {
+                isDrawingWire = false;
+                LogicCanvas.ReleaseMouseCapture();
+                LogicCanvas.Children.Remove(currentWireLine);
+                currentWireLine = null;
+                currentStartPinNode = null;
+            }
         }
 
         private void Container_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
