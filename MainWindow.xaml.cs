@@ -1,3 +1,5 @@
+using System;
+using System.Collections.Generic;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
@@ -18,6 +20,7 @@ namespace LogicSim
         private bool isDrawingWire = false;
         private Line currentWireLine;
         private Ellipse currentStartPinNode;
+        private List<Tuple<Line, Ellipse, Ellipse>> visualWires = new List<Tuple<Line, Ellipse, Ellipse>>();
 
         public MainWindow()
         {
@@ -109,7 +112,8 @@ namespace LogicSim
                     Height = 10,
                     Fill = Brushes.White,
                     Stroke = Brushes.Black,
-                    StrokeThickness = 1
+                    StrokeThickness = 1,
+                    Tag = component.Inputs[i]
                 };
                 double yPos = (40.0 / (component.Inputs.Count + 1)) * (i + 1) - 5;
                 Canvas.SetLeft(pinNode, 5);
@@ -125,7 +129,8 @@ namespace LogicSim
                     Height = 10,
                     Fill = Brushes.White,
                     Stroke = Brushes.Black,
-                    StrokeThickness = 1
+                    StrokeThickness = 1,
+                    Tag = component.Outputs[i]
                 };
                 double yPos = (40.0 / (component.Outputs.Count + 1)) * (i + 1) - 5;
                 Canvas.SetLeft(pinNode, 65);
@@ -181,9 +186,43 @@ namespace LogicSim
             {
                 isDrawingWire = false;
                 LogicCanvas.ReleaseMouseCapture();
+
+                Point pt = e.GetPosition(LogicCanvas);
+                HitTestResult result = VisualTreeHelper.HitTest(LogicCanvas, pt);
+
+                if (result != null && result.VisualHit is Ellipse targetEllipse && targetEllipse != currentStartPinNode)
+                {
+                    if (targetEllipse.Tag is Pin targetPin && currentStartPinNode.Tag is Pin sourcePin)
+                    {
+                        var wire = new Wire { Source = sourcePin, Target = targetPin };
+                        engine.Wires.Add(wire);
+
+                        visualWires.Add(new Tuple<Line, Ellipse, Ellipse>(currentWireLine, currentStartPinNode, targetEllipse));
+                        UpdateVisualWires();
+
+                        currentWireLine = null;
+                        currentStartPinNode = null;
+                        return;
+                    }
+                }
+
                 LogicCanvas.Children.Remove(currentWireLine);
                 currentWireLine = null;
                 currentStartPinNode = null;
+            }
+        }
+
+        private void UpdateVisualWires()
+        {
+            foreach (var vw in visualWires)
+            {
+                Point p1 = vw.Item2.TranslatePoint(new Point(vw.Item2.Width / 2, vw.Item2.Height / 2), LogicCanvas);
+                vw.Item1.X1 = p1.X;
+                vw.Item1.Y1 = p1.Y;
+
+                Point p2 = vw.Item3.TranslatePoint(new Point(vw.Item3.Width / 2, vw.Item3.Height / 2), LogicCanvas);
+                vw.Item1.X2 = p2.X;
+                vw.Item1.Y2 = p2.Y;
             }
         }
 
@@ -202,6 +241,7 @@ namespace LogicSim
                 Point currentPosition = e.GetPosition(LogicCanvas);
                 Canvas.SetLeft(draggedElement, currentPosition.X - clickPosition.X);
                 Canvas.SetTop(draggedElement, currentPosition.Y - clickPosition.Y);
+                UpdateVisualWires();
             }
         }
 
