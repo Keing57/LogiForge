@@ -85,12 +85,26 @@ namespace LogicSim
             {
                 Width = 60,
                 Height = 40,
-                Fill = Brushes.LightBlue,
                 Stroke = Brushes.Black,
                 StrokeThickness = 2
             };
             Canvas.SetLeft(rect, 10);
             Canvas.SetTop(rect, 0);
+
+            if (component is InputSwitch switchComp)
+            {
+                rect.Fill = switchComp.IsOn ? Brushes.LightGreen : Brushes.LightGray;
+                container.MouseRightButtonDown += (s, e) =>
+                {
+                    e.Handled = true;
+                    switchComp.IsOn = !switchComp.IsOn;
+                    rect.Fill = switchComp.IsOn ? Brushes.LightGreen : Brushes.LightGray;
+                };
+            }
+            else
+            {
+                rect.Fill = Brushes.LightBlue;
+            }
 
             var text = new TextBlock
             {
