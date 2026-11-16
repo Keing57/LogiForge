@@ -21,6 +21,8 @@ namespace LogicSim
         private Line currentWireLine;
         private Ellipse currentStartPinNode;
         private List<Tuple<Line, Ellipse, Ellipse>> visualWires = new List<Tuple<Line, Ellipse, Ellipse>>();
+        
+        private Dictionary<LogicComponent, Rectangle> componentVisuals = new Dictionary<LogicComponent, Rectangle>();
 
         public MainWindow()
         {
@@ -28,6 +30,24 @@ namespace LogicSim
             engine = new SimulationEngine();
             LogicCanvas.MouseMove += LogicCanvas_MouseMove;
             LogicCanvas.MouseLeftButtonUp += LogicCanvas_MouseLeftButtonUp;
+            CompositionTarget.Rendering += CompositionTarget_Rendering;
+        }
+
+        private void CompositionTarget_Rendering(object sender, EventArgs e)
+        {
+            engine.Update();
+            UpdateVisuals();
+        }
+
+        private void UpdateVisuals()
+        {
+            foreach (var kvp in componentVisuals)
+            {
+                if (kvp.Key is OutputLED led)
+                {
+                    kvp.Value.Fill = led.IsLit ? Brushes.Red : Brushes.DarkRed;
+                }
+            }
         }
 
         private void BtnAnd_Click(object sender, RoutedEventArgs e)
@@ -101,10 +121,16 @@ namespace LogicSim
                     rect.Fill = switchComp.IsOn ? Brushes.LightGreen : Brushes.LightGray;
                 };
             }
+            else if (component is OutputLED)
+            {
+                rect.Fill = Brushes.DarkRed;
+            }
             else
             {
                 rect.Fill = Brushes.LightBlue;
             }
+
+            componentVisuals[component] = rect;
 
             var text = new TextBlock
             {
