@@ -5,6 +5,7 @@ using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Shapes;
+using System.Windows.Threading;
 using LogicSim.Engine;
 using LogicSim.Models;
 
@@ -23,6 +24,7 @@ namespace LogicSim
         private List<Tuple<Line, Ellipse, Ellipse>> visualWires = new List<Tuple<Line, Ellipse, Ellipse>>();
         
         private Dictionary<LogicComponent, Rectangle> componentVisuals = new Dictionary<LogicComponent, Rectangle>();
+        private DispatcherTimer simulationTimer;
 
         public MainWindow()
         {
@@ -30,10 +32,14 @@ namespace LogicSim
             engine = new SimulationEngine();
             LogicCanvas.MouseMove += LogicCanvas_MouseMove;
             LogicCanvas.MouseLeftButtonUp += LogicCanvas_MouseLeftButtonUp;
-            CompositionTarget.Rendering += CompositionTarget_Rendering;
+            
+            simulationTimer = new DispatcherTimer();
+            simulationTimer.Interval = TimeSpan.FromMilliseconds(50);
+            simulationTimer.Tick += SimulationTimer_Tick;
+            simulationTimer.Start();
         }
 
-        private void CompositionTarget_Rendering(object sender, EventArgs e)
+        private void SimulationTimer_Tick(object sender, EventArgs e)
         {
             engine.Update();
             UpdateVisuals();
